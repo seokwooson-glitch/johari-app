@@ -38,9 +38,11 @@ export default function PeerFillPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ targetId, adjectiveIds: selected }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) return setError(data.error || "제출에 실패했어요.");
       router.push("/peer");
+    } catch {
+      setError("연결에 문제가 있어요. 잠시 후 다시 시도해주세요.");
     } finally {
       setSaving(false);
     }
@@ -67,7 +69,7 @@ export default function PeerFillPage() {
           onClick={save}
           disabled={saving}
         >
-          제출하기
+          {saving ? "제출하는 중…" : "제출하기"}
         </button>
       </div>
     </div>

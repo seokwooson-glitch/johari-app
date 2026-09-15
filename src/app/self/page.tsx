@@ -29,9 +29,11 @@ export default function SelfPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adjectiveIds: selected }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) return setError(data.error || "저장에 실패했어요.");
       router.push("/home");
+    } catch {
+      setError("연결에 문제가 있어요. 잠시 후 다시 시도해주세요.");
     } finally {
       setSaving(false);
     }
@@ -59,7 +61,7 @@ export default function SelfPage() {
           onClick={save}
           disabled={saving}
         >
-          저장하기
+          {saving ? "저장하는 중…" : "저장하기"}
         </button>
       </div>
     </div>

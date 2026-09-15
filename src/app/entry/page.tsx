@@ -31,6 +31,10 @@ export default function EntryPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: q }),
       });
+      if (!res.ok) {
+        setError("서버에 문제가 있어요. 잠시 후 다시 시도해주세요.");
+        return;
+      }
       const data = await res.json();
       if (!data.candidates || data.candidates.length === 0) {
         setError("명단에서 찾지 못했어요. 이름을 확인해 주세요.");
@@ -41,6 +45,8 @@ export default function EntryPage() {
       } else {
         setCandidates(data.candidates);
       }
+    } catch {
+      setError("연결에 문제가 있어요. 처음 접속이면 서버가 깨어나는 중일 수 있어요 — 잠시 후 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
@@ -58,9 +64,14 @@ export default function EntryPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: selected.id, password: pw }),
       });
-      const data = await res.json();
-      if (!res.ok) return setError(data.error || "문제가 발생했어요.");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "서버에 문제가 있어요. 잠시 후 다시 시도해주세요.");
+        return;
+      }
       router.push("/home");
+    } catch {
+      setError("연결에 문제가 있어요. 잠시 후 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
@@ -100,7 +111,7 @@ export default function EntryPage() {
           )}
           {error && <p className="text-sm text-[#B4502E] mt-3">{error}</p>}
           <button className={btnCls + " mt-4"} onClick={submitPassword} disabled={loading}>
-            {selected.hasPassword ? "확인하고 시작하기" : "설정하고 시작하기"}
+            {loading ? "확인하는 중…" : selected.hasPassword ? "확인하고 시작하기" : "설정하고 시작하기"}
           </button>
         </div>
         <button
@@ -151,7 +162,7 @@ export default function EntryPage() {
           </div>
         )}
         <button className={btnCls + " mt-4"} onClick={lookup} disabled={loading || !name.trim()}>
-          다음
+          {loading ? "찾는 중…" : "다음"}
         </button>
       </div>
     </div>

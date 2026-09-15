@@ -5,24 +5,28 @@ export const QUAD = {
     label: "열린 창",
     en: "Open",
     color: "#B5842A",
+    bg: "rgba(201,152,52,0.13)",
     meaning: "나도 알고 동료도 아는 나. 소통이 열려 있는 영역이에요.",
   },
   blind: {
     label: "보이지 않는 창",
     en: "Blind",
     color: "#2E8A8E",
+    bg: "rgba(72,160,164,0.13)",
     meaning: "나는 몰랐지만 동료들이 본 나. 좋다·나쁘다가 아니라 새로 돌아볼 재료예요.",
   },
   hidden: {
     label: "숨겨진 창",
     en: "Hidden",
     color: "#7A5AA6",
+    bg: "rgba(138,106,196,0.13)",
     meaning: "나는 알지만 아직 동료에게 안 보인 나.",
   },
   unknown: {
     label: "미지의 창",
     en: "Unknown",
     color: "#7B828C",
+    bg: "rgba(150,156,164,0.10)",
     meaning: "나도 동료도 아직 모르는 나.",
   },
 } as const;

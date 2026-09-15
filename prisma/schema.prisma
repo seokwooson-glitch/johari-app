@@ -1,0 +1,86 @@
+// 조하리의 창 — DB 스키마
+//
+// 핵심 설계 원칙(대화에서 확정된 내용):
+// 1) "누가 평가했는지"와 "무엇을 평가했는지"를 분리 저장한다.
+//    - SubmissionStatus: 제출 여부만(중복 제출 방지용) — 평가 내용 없음.
+//    - AdjectiveCount: 대상자별 형용사 카운트만 — 평가자 식별자 없음.
+//    두 테이블은 조인 키가 없어서, 누가 어떤 형용사를 골랐는지 구조적으로 복원 불가능하다.
+// 2) 팀/조직 단위 집계는 두지 않는다 — 오직 개인별 결과만 존재.
+// 3) 결과는 (마감 && 최소 응답자 수) 조건을 둘 다 만족해야 열람 가능(k-익명성).
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Member {
+  id   String  @id // 예: "u01" — 조직도의 고유 id, lib/org.ts에서 시딩
+  name String
+  team String?
+  role String? // "실장" | "팀장" | "팀원"
+
+  credential Credential?
+  selfPicks  SelfPick[]
+
+  // 이 사람이 "평가자"로서 남긴 제출 기록(내용 없음, 중복 방지용)
+  evaluationsGiven SubmissionStatus[] @relation("evaluator")
+  // 이 사람이 "대상자"로서 받은 제출 기록(내용 없음, 인원수 계산용)
+  evaluationsReceived SubmissionStatus[] @relation("target")
+
+  createdAt DateTime @default(now())
+}
+
+// 본인 확인용 비밀번호(자체 인증, SSO 아님). 반드시 해시로만 저장.
+model Credential {
+  memberId     String   @id
+  member       Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  passwordHash String
+  updatedAt    DateTime @updatedAt
+}
+
+// 본인이 스스로에 대해 고른 형용사 — 익명 이슈 없음(내 것이므로 내 id와 묶여도 됨)
+model SelfPick {
+  id          Int    @id @default(autoincrement())
+  memberId    String
+  member      Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  adjectiveId String
+
+  @@unique([memberId, adjectiveId])
+}
+
+// 익명 집계 테이블: 대상자 + 형용사별 카운트만 존재. 평가자 필드 자체가 없음.
+model AdjectiveCount {
+  id          Int    @id @default(autoincrement())
+  targetId    String
+  adjectiveId String
+  count       Int    @default(0)
+
+  @@unique([targetId, adjectiveId])
+  @@index([targetId])
+}
+
+// 제출 여부(중복 제출 방지 + 응답자 수 계산 전용). 어떤 형용사를 골랐는지는 담지 않는다.
+model SubmissionStatus {
+  id          Int      @id @default(autoincrement())
+  evaluatorId String
+  targetId    String
+  submittedAt DateTime @default(now())
+
+  evaluator Member @relation("evaluator", fields: [evaluatorId], references: [id], onDelete: Cascade)
+  target    Member @relation("target", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluatorId, targetId])
+  @@index([targetId])
+}
+
+// 진행 설정: 마감 시각, 공개 여부, 최소 응답자 수(k-익명성 임계치)
+model Config {
+  id            Int       @id @default(1)
+  deadline      DateTime?
+  closed        Boolean   @default(false)
+  minEvaluators Int       @default(3)
+}

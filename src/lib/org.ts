@@ -1,35 +1,53 @@
-// 조직도(명단) — 실제 구성원 이름으로 반드시 교체해서 배포하세요.
-// 팀 구성은 대화에서 확인된 실제 규모(R팀 3 / 인사관리팀 11 / 복지팀 6 / 보상팀 6)를 반영했습니다.
-// 이름은 전부 자리표시자(placeholder)입니다 — prisma/seed.ts 가 이 배열로 DB를 시딩하니,
-// 배포 전에 아래 name 값들을 실제 구성원 이름으로 바꿔주세요. id는 고유하기만 하면 됩니다.
+// 조직도(명단) — 실제 구성원 명단 반영 (2026-09 기준)
+
+export type Role = "실장" | "팀장" | "파트장" | "부팀장" | "팀원";
 
 export type OrgMember = {
   id: string;
   name: string;
-  team: string | null;
-  role: "실장" | "팀장" | "팀원";
+  team: string | null; // 실장은 null(인사실 소속, 특정 팀 없음)
+  role: Role;
 };
-
-function makeTeam(teamName: string, count: number, prefix: string): OrgMember[] {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `${prefix}${String(i + 1).padStart(2, "0")}`,
-    name: `[[${teamName} 구성원 ${i + 1} — 이름 교체 필요]]`,
-    team: teamName,
-    role: (i === 0 ? "팀장" : "팀원") as OrgMember["role"],
-  }));
-}
 
 export const DIVISION_NAME = "인사실";
 
 export const ORG_MEMBERS: OrgMember[] = [
-  { id: "head01", name: "[[실장 — 이름 교체 필요]]", team: null, role: "실장" },
-  ...makeTeam("R팀", 3, "rt"),
-  ...makeTeam("인사관리팀", 11, "hr"),
-  ...makeTeam("복지팀", 6, "wf"),
-  ...makeTeam("보상팀", 6, "cp"),
+  { id: "m01", name: "손석우", team: null, role: "실장" },
+
+  { id: "m02", name: "최성국", team: "R팀", role: "팀장" },
+  { id: "m03", name: "이지훈3", team: "R팀", role: "팀원" },
+  { id: "m04", name: "곽재훈", team: "R팀", role: "팀원" },
+
+  { id: "m05", name: "정민철2", team: "인사관리팀", role: "팀장" },
+  { id: "m06", name: "백우형", team: "인사관리팀", role: "파트장" },
+  { id: "m07", name: "이연진", team: "인사관리팀", role: "팀원" },
+  { id: "m08", name: "곽경훈", team: "인사관리팀", role: "팀원" },
+  { id: "m09", name: "서예림", team: "인사관리팀", role: "팀원" },
+  { id: "m10", name: "임일영", team: "인사관리팀", role: "팀원" },
+  { id: "m11", name: "강지민", team: "인사관리팀", role: "팀원" },
+  { id: "m12", name: "김혜원3", team: "인사관리팀", role: "팀원" },
+  { id: "m13", name: "이나혜", team: "인사관리팀", role: "파트장" },
+  { id: "m14", name: "이도윤", team: "인사관리팀", role: "팀원" },
+  { id: "m15", name: "이민지5", team: "인사관리팀", role: "팀원" },
+
+  { id: "m16", name: "김정아4", team: "보상팀", role: "팀장" },
+  { id: "m17", name: "이규진", team: "보상팀", role: "팀원" },
+  { id: "m18", name: "김혜지", team: "보상팀", role: "팀원" },
+  { id: "m19", name: "김송이", team: "보상팀", role: "팀원" },
+  { id: "m20", name: "박재영3", team: "보상팀", role: "팀원" },
+  { id: "m21", name: "김주영5", team: "보상팀", role: "팀원" },
+
+  { id: "m22", name: "김혜리2", team: "복지팀", role: "부팀장" },
+  { id: "m23", name: "서혜인", team: "복지팀", role: "팀원" },
+  { id: "m24", name: "이다민", team: "복지팀", role: "팀원" },
+  { id: "m25", name: "문예준", team: "복지팀", role: "팀원" },
+  { id: "m26", name: "이자연", team: "복지팀", role: "팀장" },
 ];
 
-export const TEAM_NAMES = Array.from(new Set(ORG_MEMBERS.map((m) => m.team).filter(Boolean))) as string[];
+// 화면에 팀을 나눠 보여줄 때 쓰는 순서(명단에 처음 등장하는 순서 그대로)
+export const TEAM_NAMES = Array.from(
+  new Set(ORG_MEMBERS.map((m) => m.team).filter((t): t is string => !!t))
+);
 
 export function findByName(name: string): OrgMember[] {
   return ORG_MEMBERS.filter((m) => m.name === name);

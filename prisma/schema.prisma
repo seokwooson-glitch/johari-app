@@ -84,3 +84,59 @@ model Config {
   closed        Boolean   @default(false)
   minEvaluators Int       @default(3)
 }
+
+// ==================================================================
+// 범용(개인용) 조하리의 창 — 인사실 명단과 무관하게 누구나 계정을 만들어
+// 자기 평가를 하고, 링크(+비밀번호)를 공유해 평가를 받는 별도 페이지.
+// 익명성 원칙(내용/신원 분리, 팀 집계 없음)은 위와 동일하게 유지.
+// ==================================================================
+
+model PublicAccount {
+  id                String   @id @default(cuid())
+  name              String
+  passwordHash      String
+  shareToken        String   @unique @default(cuid()) // 평가 링크에 쓰는 공개 토큰
+  sharePasswordHash String? // 링크를 받은 사람이 입력해야 하는 비밀번호
+  closed            Boolean  @default(false) // 본인이 마감을 눌렀는지
+  minEvaluators     Int      @default(5) // "4명을 넘으면"(=5명 이상) 마감 가능
+  createdAt         DateTime @default(now())
+
+  selfPicks       PublicSelfPick[]
+  adjectiveCounts PublicAdjectiveCount[]
+  submissionMarks PublicSubmissionMark[]
+}
+
+// 본인이 스스로에 대해 고른 형용사(익명 이슈 없음)
+model PublicSelfPick {
+  id          Int           @id @default(autoincrement())
+  accountId   String
+  account     PublicAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  adjectiveId String
+
+  @@unique([accountId, adjectiveId])
+}
+
+// 익명 집계: 계정(대상자) + 형용사별 카운트만. 평가자 식별자 없음.
+model PublicAdjectiveCount {
+  id          Int           @id @default(autoincrement())
+  accountId   String
+  account     PublicAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  adjectiveId String
+  count       Int           @default(0)
+
+  @@unique([accountId, adjectiveId])
+  @@index([accountId])
+}
+
+// 중복 제출 방지 전용(내용 없음). 평가자는 로그인하지 않으므로 브라우저가
+// 생성한 무작위 토큰(개인 식별 정보 아님)으로만 구분한다.
+model PublicSubmissionMark {
+  id             Int           @id @default(autoincrement())
+  accountId      String
+  account        PublicAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  evaluatorToken String
+  submittedAt    DateTime      @default(now())
+
+  @@unique([accountId, evaluatorToken])
+  @@index([accountId])
+}

@@ -23,6 +23,25 @@ export function Sparkles({ size = 24, color, strokeWidth = 2, className }: IconP
   );
 }
 
+export function ArrowLeft({ size = 24, color, strokeWidth = 2, className }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color || "currentColor"}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
+    </svg>
+  );
+}
+
 export function ChevronRight({ size = 24, color, strokeWidth = 2, className }: IconProps) {
   return (
     <svg

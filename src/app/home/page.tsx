@@ -10,6 +10,7 @@ export default function HomePage() {
   const [me, setMe] = useState<Me | null | undefined>(undefined);
   const [selfCount, setSelfCount] = useState<number | null>(null);
   const [peerDone, setPeerDone] = useState<{ done: number; total: number } | null>(null);
+  const [resultsAvailable, setResultsAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
     fetch("/api/me")
@@ -24,6 +25,9 @@ export default function HomePage() {
         const members = d.members ?? [];
         setPeerDone({ done: members.filter((m: any) => m.done).length, total: members.length });
       });
+    fetch("/api/results")
+      .then((r) => r.json())
+      .then((d) => setResultsAvailable(!!d.available));
   }, []);
 
   if (me === undefined) return <p className="pt-20 text-sub">불러오는 중…</p>;
@@ -56,7 +60,9 @@ export default function HomePage() {
 
       <Link href="/results" className={cardCls + " block mt-4"}>
         <div className="font-bold">나의 창</div>
-        <div className="text-sub text-sm mt-1">기간이 끝나고 응답이 충분히 모이면 여기서 열려요.</div>
+        <div className="text-sub text-sm mt-1">
+          {resultsAvailable ? "결과를 확인할 수 있습니다." : "기간이 끝나고 응답이 충분히 모이면 여기서 열려요."}
+        </div>
       </Link>
 
       {me.role === "실장" && (

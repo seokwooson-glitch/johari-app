@@ -1,14 +1,40 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ORG_MEMBERS } from "@/lib/org";
 
 type Config = { deadline: string | null; closed: boolean; minEvaluators: number };
+type MemberLink = { name: string; selfUrl: string; resultUrl: string };
 
 export default function AdminPage() {
   const router = useRouter();
   const [config, setConfig] = useState<Config | null>(null);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+
+  const [pickedMemberId, setPickedMemberId] = useState(ORG_MEMBERS[0]?.id ?? "");
+  const [memberLink, setMemberLink] = useState<MemberLink | null>(null);
+  const [linkError, setLinkError] = useState("");
+  const [copied, setCopied] = useState<"self" | "result" | null>(null);
+
+  const generateLink = async () => {
+    setLinkError("");
+    setMemberLink(null);
+    const res = await fetch(`/api/admin/member-link?memberId=${encodeURIComponent(pickedMemberId)}`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return setLinkError(data.error || "링크 생성에 실패했어요.");
+    setMemberLink(data);
+  };
+
+  const copy = async (kind: "self" | "result", url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(kind);
+      setTimeout(() => setCopied(null), 1500);
+    } catch {
+      /* 클립보드 접근이 막혀 있으면 그냥 무시 — 링크는 화면에 이미 보임 */
+    }
+  };
 
   useEffect(() => {
     fetch("/api/admin/config")
@@ -83,6 +109,57 @@ export default function AdminPage() {
           {saved && <p className="text-sm text-open">저장했어요.</p>}
         </div>
       )}
+
+      <h2 className="text-lg font-extrabold mt-10">개인 링크 생성</h2>
+      <p className="text-faint text-xs mt-2 leading-relaxed">
+        진행 기간을 놓친 구성원(휴가 복귀 등)에게 로그인 없이 보낼 수 있는 자기평가 링크와 결과 링크를 만들어요.
+        결과 링크는 마감 + 최소 응답자 수 조건을 그대로 따라요.
+      </p>
+      <div className="rounded-2xl bg-panel border border-line p-6 mt-4 space-y-4">
+        <div className="flex gap-2">
+          <select
+            className="flex-1 rounded-xl border border-line bg-white px-4 py-3"
+            value={pickedMemberId}
+            onChange={(e) => {
+              setPickedMemberId(e.target.value);
+              setMemberLink(null);
+            }}
+          >
+            {ORG_MEMBERS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+                {m.team ? ` · ${m.team}` : ""}
+              </option>
+            ))}
+          </select>
+          <button className="rounded-xl bg-accent text-white font-semibold px-5" onClick={generateLink}>
+            생성
+          </button>
+        </div>
+        {linkError && <p className="text-sm text-[#B4502E]">{linkError}</p>}
+        {memberLink && (
+          <div className="space-y-3">
+            <div>
+              <div className="text-xs font-bold text-hidden">자기평가 링크 — {memberLink.name} 님에게 전달</div>
+              <div className="flex gap-2 mt-1.5">
+                <input readOnly className="flex-1 rounded-xl border border-line bg-white px-3 py-2 text-sm" value={memberLink.selfUrl} />
+                <button className="rounded-xl bg-line px-3 text-sm font-semibold" onClick={() => copy("self", memberLink.selfUrl)}>
+                  {copied === "self" ? "복사됨" : "복사"}
+                </button>
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-bold text-blind">결과 링크 — {memberLink.name} 님에게 전달</div>
+              <div className="flex gap-2 mt-1.5">
+                <input readOnly className="flex-1 rounded-xl border border-line bg-white px-3 py-2 text-sm" value={memberLink.resultUrl} />
+                <button className="rounded-xl bg-line px-3 text-sm font-semibold" onClick={() => copy("result", memberLink.resultUrl)}>
+                  {copied === "result" ? "복사됨" : "복사"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -110,6 +110,14 @@ export default function AdminPage() {
         </div>
       )}
 
+      <button
+        className="w-full rounded-2xl bg-panel border border-line p-5 mt-6 text-left"
+        onClick={() => router.push("/admin/search")}
+      >
+        <div className="font-bold">개인별 결과 검색</div>
+        <div className="text-sub text-sm mt-1">이름으로 찾아 그 사람의 조하리의 창을 바로 확인해요.</div>
+      </button>
+
       <h2 className="text-lg font-extrabold mt-10">개인 링크 생성</h2>
       <p className="text-faint text-xs mt-2 leading-relaxed">
         진행 기간을 놓친 구성원(휴가 복귀 등)에게 로그인 없이 보낼 수 있는 자기평가 링크와 결과 링크를 만들어요.

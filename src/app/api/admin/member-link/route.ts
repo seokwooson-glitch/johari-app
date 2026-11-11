@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionMemberId } from "@/lib/session";
+import { requireAdmin } from "@/lib/admin";
 import { createMemberLinkToken } from "@/lib/memberLink";
 import { findById } from "@/lib/org";
-
-async function requireAdmin() {
-  const memberId = await getSessionMemberId();
-  const adminId = process.env.ADMIN_MEMBER_ID;
-  if (!memberId || !adminId || memberId !== adminId) return null;
-  return memberId;
-}
 
 // 장기 휴가 복귀자처럼 진행 기간을 놓친 구성원을 위해, 로그인 없이 바로 쓸 수 있는
 // 자기평가/결과 링크를 생성해주는 관리자 전용 API.

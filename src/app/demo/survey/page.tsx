@@ -10,11 +10,13 @@ export default function DemoSurveyPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [error, setError] = useState("");
 
-  const toggle = (id: string) =>
+  const toggle = (id: string) => {
+    setError("");
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  };
 
   const submit = () => {
-    if (selected.length < PICK_MIN) return setError(`최소 ${PICK_MIN}개를 골라주세요.`);
+    if (selected.length < PICK_MIN) return setError(`${PICK_MIN - selected.length}개 더 골라주세요 (최소 ${PICK_MIN}개)`);
     try {
       sessionStorage.setItem(DEMO_PICKS_KEY, JSON.stringify(selected));
     } catch {
@@ -34,10 +36,17 @@ export default function DemoSurveyPage() {
         동료를 평가할 때도 같은 화면에서 동료에게 보이는 모습을 고릅니다.
       </p>
       <AdjectiveGrid selected={selected} onToggle={toggle} accentClass="border-hidden bg-hidden text-white" />
-      {error && <p className="text-sm text-[#B4502E] mt-3">{error}</p>}
-      <div className="sticky bottom-0 mt-6 bg-paper/95 backdrop-blur py-3 border-t border-line flex items-center justify-between">
-        <span className="text-sm text-sub">{selected.length}개 선택됨</span>
-        <button className="rounded-xl bg-hidden text-white font-semibold px-6 py-2.5" onClick={submit}>
+      <div className="sticky bottom-0 mt-6 bg-paper/95 backdrop-blur py-3 border-t border-line flex items-center justify-between gap-3">
+        <span className={"text-sm " + (error ? "text-[#B4502E] font-semibold" : "text-sub")}>
+          {error || `${selected.length}개 선택됨 (최소 ${PICK_MIN}개)`}
+        </span>
+        <button
+          className={
+            "rounded-xl bg-hidden text-white font-semibold px-6 py-2.5 shrink-0 " +
+            (selected.length < PICK_MIN ? "opacity-50" : "")
+          }
+          onClick={submit}
+        >
           결과 샘플 보기
         </button>
       </div>

@@ -172,7 +172,8 @@ export default function ResultView({ data }: { data: MemberResult }) {
         <Card className="flex gap-3.5 items-start" style={{ padding: 18, marginTop: 18 }}>
           <Sparkles size={20} color={QUAD.blind.color} className="mt-0.5 shrink-0" />
           <p className="text-[14.5px] leading-relaxed">
-            동료 {topBlind.cnt}명이 공통으로 <b style={{ color: QUAD.blind.color }}>{topBlind.ko}</b>({topBlind.en})을(를)
+            동료 {topBlind.cnt}명이 공통으로 <b style={{ color: QUAD.blind.color }}>{topBlind.ko}</b>
+            {topBlind.ko.includes("(") ? "" : `(${topBlind.en})`}을(를)
             골랐는데, 스스로는 나를 그렇게 보지 않았어요. 좋다·나쁘다를 떠나, 이 모습이 어떻게 느껴지세요?
           </p>
         </Card>

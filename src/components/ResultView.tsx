@@ -105,7 +105,7 @@ function SideLabel({ text }: { text: string }) {
   return (
     <div
       className="self-stretch flex items-center justify-center text-center text-[12.5px] font-bold text-sub tracking-widest"
-      style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+      style={{ writingMode: "vertical-rl" }}
     >
       {text}
     </div>

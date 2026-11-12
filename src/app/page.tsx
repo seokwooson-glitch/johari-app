@@ -59,7 +59,6 @@ function MiniCell({ q, chips, empty }: { q: Quad; chips?: string[]; empty?: bool
 function MiniWindow() {
   const vertical: CSSProperties = {
     writingMode: "vertical-rl",
-    transform: "rotate(180deg)",
     textAlign: "center",
     fontSize: 10.5,
     fontWeight: 700,
